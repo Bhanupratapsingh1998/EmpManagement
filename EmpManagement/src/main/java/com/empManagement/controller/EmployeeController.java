@@ -48,7 +48,6 @@ public class EmployeeController {
 	@GetMapping("/Employees/{id}")
 	public ResponseEntity<Employee> getEmployee(@PathVariable("id") Long id) {
 		return employeeService.getEmployee(id);
-
 	}
 
 	// add the employee
