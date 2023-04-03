@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 import com.empManagement.helper.ApiResponse;
 import com.empManagement.model.Employee;
@@ -23,6 +24,6 @@ public interface EmployeeService {
 
 	ResponseEntity<ApiResponse> updateEmploee(Long id, Employee employeeDts);
 
-	void updateEmploeeById(Long id, Employee employeeDts);
+	ResponseEntity<?> loginEmployee(Employee employee,Authentication authentication);
 
 }

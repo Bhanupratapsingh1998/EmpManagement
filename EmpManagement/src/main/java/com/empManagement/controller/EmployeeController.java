@@ -6,6 +6,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,8 +35,11 @@ public class EmployeeController {
 	@Autowired
 	private EmployeeService employeeService;
 
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
 	// get all the employee
-	@GetMapping("/Employees")
+	@GetMapping("/listEmployees")
 	public Page<Employee> getAllEmployee(@RequestParam(required = false, defaultValue = "0") int pageNumber,
 			@RequestParam(required = false, defaultValue = "5") int pageSize) {
 		return employeeService.getAllEmployee(pageNumber, pageSize);
@@ -44,6 +50,14 @@ public class EmployeeController {
 		return employeeService.getAllEmployees();
 	}
 
+	// login employees
+	@PostMapping("/signin")
+	public ResponseEntity<?> loginEmployee(@RequestBody Employee employee) {
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(employee.getEmailId().trim(), employee.getPassword().trim()));
+		return employeeService.loginEmployee(employee, authentication);
+	}
+
 	// Get the employee
 	@GetMapping("/Employees/{id}")
 	public ResponseEntity<Employee> getEmployee(@PathVariable("id") Long id) {
@@ -51,7 +65,7 @@ public class EmployeeController {
 	}
 
 	// add the employee
-	@PostMapping("/Employees")
+	@PostMapping("/addEmployee")
 	public ResponseEntity<ApiResponse> addEmployees(@RequestBody Employee employee) {
 		return employeeService.addEmployees(employee);
 	}
@@ -60,12 +74,6 @@ public class EmployeeController {
 	@PutMapping("/Employees/{id}")
 	public ResponseEntity<ApiResponse> updateEmploee(@PathVariable("id") Long id, @RequestBody Employee employeeDts) {
 		return employeeService.updateEmploee(id, employeeDts);
-	}
-
-	// update the employee using procedure
-	@PutMapping("/Employee/{id}")
-	public void updateEmploees(@PathVariable("id") Long id, @RequestBody Employee employeeDts) {
-		employeeService.updateEmploeeById(id, employeeDts);
 	}
 
 	// delete the employee

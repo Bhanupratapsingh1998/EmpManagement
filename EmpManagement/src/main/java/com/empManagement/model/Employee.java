@@ -8,8 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedStoredProcedureQueries;
-import javax.persistence.NamedStoredProcedureQuery;
 import javax.persistence.Table;
 
 import lombok.Data;
@@ -38,8 +36,13 @@ public class Employee implements Serializable {
 	@Column(name = "email_id", nullable = false)
 	private String emailId;
 	
+	@Column(name = "password", nullable = false)
+	private String password;
+	
 	@Column(name = "User_name", nullable = false)
 	private String userName;
+	
+	private String image;
 
 	@Embedded
 	private ApiInDetails apiInDetails = new ApiInDetails();

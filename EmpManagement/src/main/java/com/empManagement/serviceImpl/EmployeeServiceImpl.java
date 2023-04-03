@@ -1,6 +1,7 @@
 package com.empManagement.serviceImpl;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,19 +11,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.empManagement.config.JwtUtil;
 import com.empManagement.exception.ResourceNotFoundException;
 import com.empManagement.helper.ApiResponse;
+import com.empManagement.helper.TokenResponse;
 import com.empManagement.model.ApiInDetails;
 import com.empManagement.model.Employee;
 import com.empManagement.repository.EmployeeRepository;
 import com.empManagement.service.EmployeeService;
 
 @Service
-public class EmployeeServiceImpl implements EmployeeService {
-	
+public class EmployeeServiceImpl implements EmployeeService, UserDetailsService {
+
+	@Autowired
+	private JwtUtil jwtUtil;
+
 	@Autowired
 	private EmployeeRepository employeeRepository;
 
@@ -35,6 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public ResponseEntity<ApiResponse> addEmployees(Employee employee) {
+		BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
 		ApiResponse response = new ApiResponse();
 		String email = employee.getEmailId();
 		if (employeeRepository.existsByEmailId(email)) {
@@ -53,6 +66,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 			apDetails.setDateCreated(formattedDate);
 			apDetails.setCreatedBy(employee.getFirstName());
 			employee.setApiInDetails(apDetails);
+			employee.setPassword(bcryptEncoder.encode(employee.getPassword()));
 			employee.setUserName(employee.getFirstName().toLowerCase() + "@" + sdf11);
 			employeeRepository.save(employee);
 			response.setStatus_code(200);
@@ -63,11 +77,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public ResponseEntity<ApiResponse> updateEmploee(Long id, Employee employeeDts) {
-		Employee employee = employeeRepository.findById(id)
+		Employee employee = employeeRepository.getEmployee(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee does not exits with id : " + id));
 		ApiResponse response = new ApiResponse();
-		String name = employeeDts.getFirstName();
-		String email = employeeDts.getEmailId();
+//		String name = employeeDts.getFirstName();
+//		String email = employeeDts.getEmailId();
 
 		String dateCreated = employee.getApiInDetails().getDateCreated();
 		String createdBy = employee.getApiInDetails().getCreatedBy();
@@ -89,7 +103,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 		employee.setFirstName(employeeDts.getFirstName());
 		employee.setLastName(employeeDts.getLastName());
 		employee.setUserName(employeeDts.getFirstName().toLowerCase() + "@" + sdf11);
-		this.employeeRepository.save(employee);
+//		this.employeeRepository.save(employee);
+		this.employeeRepository.updateEmployee(id, employeeDts.getFirstName(), employeeDts.getLastName(),
+				employeeDts.getEmailId());
 
 		response.setStatus_code(200);
 		response.setMessage("Employee updated successfully");
@@ -123,12 +139,29 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 
 	@Override
-	public void updateEmploeeById(Long id, Employee employeeDts) {
-		Employee employee = employeeRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Employee does not exits with id : " + id));
-		System.out.println(id+" "+employee.getFirstName()+" "+ employee.getLastName()+" "+ employee.getEmailId());
-		this.employeeRepository.updateEmployee(id, employeeDts.getFirstName(), employeeDts.getLastName(), employeeDts.getEmailId());
+	public ResponseEntity<?> loginEmployee(Employee employee, Authentication authentication) {
+		TokenResponse tmessage = new TokenResponse();
+		ApiResponse response = new ApiResponse();
+		String email = employee.getEmailId();
+		String token = "Error";
+		if (authentication != null && authentication.isAuthenticated()) {
+			final UserDetails userDetails = loadUserByUsername(String.valueOf(employee.getEmailId()));
+			token = jwtUtil.generateToken(userDetails);
+			System.out.println(token);
+			tmessage.setMessage("Employee login Successfully!!!");
+			tmessage.setToken(token);
+			return new ResponseEntity<TokenResponse>(tmessage, HttpStatus.OK);
 
+		} else {
+			response.setStatus_code(400);
+			response.setMessage("Invalid Credential!!!");
+			return new ResponseEntity<ApiResponse>(response, HttpStatus.BAD_REQUEST);
+		}
 	}
 
+	public UserDetails loadUserByUsername(String emailId) throws UsernameNotFoundException {
+		Employee employee = employeeRepository.findByEmailId(emailId);
+		return new org.springframework.security.core.userdetails.User((employee.getEmailId()), employee.getPassword(),
+				new ArrayList<>());
+	}
 }
