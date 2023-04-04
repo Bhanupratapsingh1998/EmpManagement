@@ -20,13 +20,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.empManagement.config.JwtUtil;
 import com.empManagement.exception.ResourceNotFoundException;
 import com.empManagement.helper.ApiResponse;
 import com.empManagement.helper.TokenResponse;
 import com.empManagement.model.ApiInDetails;
 import com.empManagement.model.Employee;
 import com.empManagement.repository.EmployeeRepository;
+import com.empManagement.security.JwtUtil;
 import com.empManagement.service.EmployeeService;
 
 @Service
