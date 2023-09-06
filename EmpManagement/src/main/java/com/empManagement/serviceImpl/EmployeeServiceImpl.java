@@ -28,8 +28,10 @@ import com.empManagement.helper.TokenResponse;
 import com.empManagement.model.ApiInDetails;
 import com.empManagement.model.Employee;
 import com.empManagement.model.EmployeeAddress;
+import com.empManagement.model.Role;
 import com.empManagement.repository.EmployeeAddressRepository;
 import com.empManagement.repository.EmployeeRepository;
+import com.empManagement.repository.RoleRepository;
 import com.empManagement.security.JwtUtil;
 import com.empManagement.service.EmployeeService;
 
@@ -41,8 +43,12 @@ public class EmployeeServiceImpl implements EmployeeService, UserDetailsService 
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
+
 	@Autowired
 	private EmployeeAddressRepository employeeAddreassRepository;
+
+	@Autowired
+	private RoleRepository roleRepository;
 
 	@Override
 	public ResponseEntity<Employee> getEmployee(Long id) {
@@ -192,5 +198,39 @@ public class EmployeeServiceImpl implements EmployeeService, UserDetailsService 
 		}
 
 		return Collections.emptyList(); // Return an empty list if the employee doesn't exist
+	}
+
+	@Override
+	public ResponseEntity<ApiResponse> addRole(String email, Role role) {
+		ApiResponse response = new ApiResponse();
+		Employee employee = employeeRepository.findByEmailId(email);
+		boolean roleExists = false;
+		if (employee != null) {
+			for (Role employeeRole : employee.getRoles()) {
+				if (employeeRole.getRoleName().equals(role.getRoleName())) {
+					roleExists = true;
+					break;
+				}
+			}
+			if (roleExists) {
+				response.setStatus_code(400);
+				response.setMessage("Employee already has this role");
+			} else {
+				Role existingRole = roleRepository.findByRoleName(role.getRoleName());
+				if (existingRole == null) {
+					roleRepository.save(role);
+				}
+				employee.getRoles().add(role);
+				employeeRepository.save(employee);
+				response.setStatus_code(200);
+				response.setMessage("Role added successfully");
+			}
+		} else {
+			response.setStatus_code(404);
+			response.setMessage("Employee not found with email: " + email);
+		}
+
+		return ResponseEntity.status(HttpStatus.valueOf(response.getStatus_code())).body(response);
+
 	}
 }

@@ -1,19 +1,24 @@
 package com.empManagement.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Data;
@@ -51,10 +56,14 @@ public class Employee implements Serializable {
 	private String userName;
 
 	private String image;
-	
+
 	@JsonManagedReference
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
 	private List<EmployeeAddress> addresses;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "employee_role", joinColumns = @JoinColumn(name = "employee_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
 
 	@Embedded
 	private ApiInDetails apiInDetails = new ApiInDetails();
