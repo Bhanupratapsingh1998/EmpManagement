@@ -1,4 +1,4 @@
-package com.empManagement.model;
+package com.empManagement.dto;
 
 import org.springframework.stereotype.Component;
 

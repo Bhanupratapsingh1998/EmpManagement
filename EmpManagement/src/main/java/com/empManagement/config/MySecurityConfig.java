@@ -42,7 +42,7 @@ public class MySecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.cors().and().csrf().disable().authorizeRequests().antMatchers("/api/v1/addEmployee", "/api/v1/signin").permitAll()
+		http.cors().and().csrf().disable().authorizeRequests().antMatchers("/api/v1/addEmployee", "/api/v1/signin","/swagger-ui.html").permitAll()
 				.anyRequest().authenticated().and().httpBasic().authenticationEntryPoint(entryPoint).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		http.addFilterBefore(jFilter, UsernamePasswordAuthenticationFilter.class);

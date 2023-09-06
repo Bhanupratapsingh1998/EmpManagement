@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.empManagement.helper.ApiResponse;
 import com.empManagement.model.Employee;
+import com.empManagement.model.EmployeeAddress;
 import com.empManagement.service.EmployeeService;
 
 import io.swagger.annotations.Api;
@@ -59,9 +60,16 @@ public class EmployeeController {
 	}
 
 	// Get the employee
-	@GetMapping("/Employees/{id}")
+	@GetMapping("/employee/{id}")
 	public ResponseEntity<Employee> getEmployee(@PathVariable("id") Long id) {
 		return employeeService.getEmployee(id);
+	}
+
+	// Get Employee city
+	@GetMapping("/{employeeId}/cities")
+	public ResponseEntity<List<String>> getCitiesByEmployeeId(@PathVariable Long employeeId) {
+		List<String> cities = employeeService.getCitiesByEmployeeId(employeeId);
+		return ResponseEntity.ok(cities);
 	}
 
 	// add the employee

@@ -2,10 +2,12 @@ package com.empManagement.serviceImpl;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,8 @@ import com.empManagement.helper.ApiResponse;
 import com.empManagement.helper.TokenResponse;
 import com.empManagement.model.ApiInDetails;
 import com.empManagement.model.Employee;
+import com.empManagement.model.EmployeeAddress;
+import com.empManagement.repository.EmployeeAddressRepository;
 import com.empManagement.repository.EmployeeRepository;
 import com.empManagement.security.JwtUtil;
 import com.empManagement.service.EmployeeService;
@@ -37,6 +41,8 @@ public class EmployeeServiceImpl implements EmployeeService, UserDetailsService 
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
+	@Autowired
+	private EmployeeAddressRepository employeeAddreassRepository;
 
 	@Override
 	public ResponseEntity<Employee> getEmployee(Long id) {
@@ -67,7 +73,7 @@ public class EmployeeServiceImpl implements EmployeeService, UserDetailsService 
 			apDetails.setCreatedBy(employee.getFirstName());
 			employee.setApiInDetails(apDetails);
 			employee.setPassword(bcryptEncoder.encode(employee.getPassword()));
-			employee.setUserName(employee.getFirstName().toLowerCase() + "@" + sdf11);
+			employee.setUserName(employee.getFirstName().toLowerCase() + "" + sdf11);
 			employeeRepository.save(employee);
 			response.setStatus_code(200);
 			response.setMessage("Employee added successfully");
@@ -163,5 +169,28 @@ public class EmployeeServiceImpl implements EmployeeService, UserDetailsService 
 		Employee employee = employeeRepository.findByEmailId(emailId);
 		return new org.springframework.security.core.userdetails.User((employee.getEmailId()), employee.getPassword(),
 				new ArrayList<>());
+	}
+
+	@Override
+	public List<String> getCitiesByEmployeeId(Long employeeId) {
+
+		// If we use JPQL query
+		// List<String> cities =
+		// employeeAddreassRepository.getCityByEmployeeId1(employeeId);
+
+		Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
+
+		if (employeeOptional.isPresent()) {
+			Employee employee = employeeOptional.get();
+			List<String> cities = new ArrayList<>();
+			cities.add(employee.getFirstName() + " " + employee.getLastName());
+			for (EmployeeAddress address : employee.getAddresses()) {
+				cities.add(address.getCity());
+			}
+
+			return cities;
+		}
+
+		return Collections.emptyList(); // Return an empty list if the employee doesn't exist
 	}
 }

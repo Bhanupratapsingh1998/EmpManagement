@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 
 import com.empManagement.helper.ApiResponse;
 import com.empManagement.model.Employee;
+import com.empManagement.model.EmployeeAddress;
 
 public interface EmployeeService {
 
@@ -25,5 +26,7 @@ public interface EmployeeService {
 	ResponseEntity<ApiResponse> updateEmploee(Long id, Employee employeeDts);
 
 	ResponseEntity<?> loginEmployee(Employee employee,Authentication authentication);
+
+	List<String> getCitiesByEmployeeId(Long employeeId);
 
 }
