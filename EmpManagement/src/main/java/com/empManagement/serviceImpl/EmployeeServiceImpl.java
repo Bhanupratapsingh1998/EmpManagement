@@ -233,4 +233,10 @@ public class EmployeeServiceImpl implements EmployeeService, UserDetailsService 
 		return ResponseEntity.status(HttpStatus.valueOf(response.getStatus_code())).body(response);
 
 	}
+
+	@Override
+	public Page<Employee> getEmployeeByPage(Pageable pageable) {
+		 Page<Employee> returnPage = employeeRepository.findAll(pageable);
+		 return returnPage;
+	}
 }

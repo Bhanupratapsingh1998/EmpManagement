@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,6 +49,14 @@ public class EmployeeController {
 		return employeeService.getAllEmployee(pageNumber, pageSize);
 	}
 
+    // get all the employee using pagination
+	@GetMapping("/getEmployeeByPage")
+	public Page<Employee> getEmployeeByPage(Pageable pageable) { 
+		Employee employee = new Employee();
+		employee.setFirstName("Sanchit");
+		pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("firstName")));
+		return employeeService.getEmployeeByPage(pageable);
+	}
 	@GetMapping("/getEmployees")
 	List<Employee> getsAllEmployee() {
 		return employeeService.getAllEmployees();
